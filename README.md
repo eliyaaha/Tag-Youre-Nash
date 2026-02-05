@@ -4,6 +4,10 @@
 
 > This repository contains the final project developed for the **Multi-Agent Systems (MAS)** course at **Ben-Gurion University of the Negev**, Faculty of Computer and Information Science, Department of Software and Information Systems Engineering.
 
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
+![Library](https://img.shields.io/badge/Library-PettingZoo-green)
+![Algorithm](https://img.shields.io/badge/Algorithm-PPO-orange)
+
 
 ## 📌 Overview
 
@@ -62,47 +66,6 @@ cd Tag-Youre-Nash
 pip install -r requirements.txt
 
 ```
-# Tag, You're Nash! 🏃‍♂️💨
-
-**Analyzing the Impact of Reward Structures on Strategic Stability and Nash Convergence in MARL**
-
-> **Final Project - Department of Software and Information Systems Engineering**
-> **Ben-Gurion University of the Negev**
-
-![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
-![Library](https://img.shields.io/badge/Library-PettingZoo-green)
-![Algorithm](https://img.shields.io/badge/Algorithm-PPO-orange)
-
-## 📌 Overview
-
-[cite_start]In Multi-Agent Reinforcement Learning (MARL), specifically in competitive environments like **Simple Tag**, penalty-heavy reward configurations often drive agents into a "stalling" state—prioritizing risk aversion over task objectives[cite: 16].
-
-This project introduces a **Cooperation Factor ($\alpha$)** to balance individual rewards against collective team performance. [cite_start]We analyze how shifting this reward distribution influences the emergence of coordinated predatory strategies and breaks the stalling equilibrium[cite: 19].
-
-## 🧪 The Cooperation Factor ($\alpha$)
-
-To modulate the learning dynamics, we redefined the reward function using a mixing parameter $\alpha \in [0, 1]$.
-The reward $R_i$ for predator $i$ is calculated as:
-
-$$R_{i} = \alpha \cdot r_{i} + (1 - \alpha) \cdot \sum_{j=1}^{N} r_{j}$$
-
-Where:
-* $\alpha = 1.0$: **Pure Competition** (Standard MPE).
-* $\alpha = 0.25$: **High Cooperation** (Optimal Strategy).
-* $\alpha = 0.0$: **Full Sharing**.
-
-## 🚀 Installation
-
-1.  **Clone the repository:**
-    ```bash
-    git clone [https://github.com/omertol/Tag-Youre-Nash.git](https://github.com/omertol/Tag-Youre-Nash.git)
-    cd Tag-Youre-Nash
-    ```
-
-2.  **Install dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
 
 ## 💻 Usage
 
