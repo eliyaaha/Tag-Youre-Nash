@@ -2,9 +2,9 @@
 
 **Analyzing the Impact of Reward Structures on Strategic Stability and Nash Convergence in MARL**
 
-> 
-> **Final Project - Department of Software and Information Systems Engineering** > **Ben-Gurion University of the Negev** 
-> 
+Final Project | Multi-Agent Systems Course 
+
+Department of Software and Information Systems Engineering | Faculty of Computer and Information Science |  Ben-Gurion University of the Negev
 
 ## 📌 Overview
 
@@ -136,7 +136,7 @@ python main.py --mode train --alphas 1.0 0.25 --timesteps 1000000
 ```bash
 python main.py --mode eval --alphas 0.25 --episodes 100
 ```
-# **🔧 Arguments Reference**
+### **🔧 Arguments Reference**
 | Argument | Type | Default | Description |
 | --- | --- | --- | --- |
 |`--mode`| `str` | Required | Execution mode: train, eval, or both. |
