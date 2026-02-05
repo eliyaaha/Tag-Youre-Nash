@@ -4,7 +4,9 @@
 
 Final Project | Multi-Agent Systems Course 
 
-Department of Software and Information Systems Engineering | Faculty of Computer and Information Science |  Ben-Gurion University of the Negev
+> Department of Software and Information Systems Engineering
+> Faculty of Computer and Information Science
+> Ben-Gurion University of the Negev
 
 ## 📌 Overview
 
