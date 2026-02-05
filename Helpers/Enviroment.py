@@ -1,16 +1,39 @@
 from pettingzoo.mpe import simple_tag_v3
-from RewardSharing import *
+from .RewardSharing import *
 import supersuit as ss
 import torch
 import os
 import multiprocessing
-import random 
-random.seed(42)
+import random
+import numpy as np
+
+def set_seed(seed: int = 42):
+    """
+    Sets the seed for reproducibility across python, numpy, and pytorch.
+    """
+    # 1. Base Python
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    
+    # 2. Numpy
+    np.random.seed(seed)
+    
+    # 3. PyTorch
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)  # For multi-GPU
+    
+    # 4. PyTorch Deterministic Operations
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    
+    print(f"✅ Random seed set to: {seed}")
 
 # Set up the device and cores
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 NUM_CORES = max(1, multiprocessing.cpu_count() - 2)
 os.environ["SDL_VIDEODRIVER"] = "dummy"  # For headless server execution
+set_seed(42)
 
 def create_env(alpha=1.0, num_cores = -1, max_cycles = 50):
     """
@@ -26,6 +49,8 @@ def create_env(alpha=1.0, num_cores = -1, max_cycles = 50):
         render_mode=None
     )
     
+    possible_agents = env.possible_agents
+
     # 2. Apply the Reward Sharing Wrapper
     env = RewardSharingWrapper(env, alpha=alpha)
     
@@ -43,4 +68,4 @@ def create_env(alpha=1.0, num_cores = -1, max_cycles = 50):
         num_cpus=num_cores,      
         base_class="stable_baselines3"
     )
-    return env
+    return env, possible_agents
