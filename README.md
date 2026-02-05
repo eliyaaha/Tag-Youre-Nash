@@ -13,13 +13,9 @@ This project explores the line between coordination and strategic paralysis. We 
 
 ## 🧪 Research Objectives
 
-1. 
-**RQ1:** How does shifting the reward mechanism influence cooperation in a competitive environment? 
+1. **RQ1:** How does shifting the reward mechanism influence cooperation in a competitive environment? 
 
-
-2. 
-**RQ2:** How do empirical MARL strategies align with theoretical Nash Equilibria? 
-
+2. **RQ2:** How do empirical MARL strategies align with theoretical Nash Equilibria? 
 
 
 ## 🛠️ Environment & Methodology
@@ -28,18 +24,11 @@ This project explores the line between coordination and strategic paralysis. We 
 
 We utilize the **Multi-Agent Particle Environment (MPE)**, specifically the `simple_tag_v3` scenario via the **PettingZoo** library.
 
-* 
-**Predators (3):** Slower agents aiming to capture the prey ( reward).
+* **Predators (3):** Slower agents aiming to capture the prey ( reward).
 
+* **Prey (1):** Faster agent aiming to evade capture ( penalty).
 
-* 
-**Prey (1):** Faster agent aiming to evade capture ( penalty).
-
-
-* 
-**Action Space:** Discrete (Up, Down, Left, Right, Stationary).
-
-
+* **Action Space:** Discrete (Up, Down, Left, Right, Stationary).
 
 ### The Cooperation Factor ($\alpha$)
 
@@ -135,6 +124,7 @@ python main.py --mode train --alphas 1.0 0.25 --timesteps 1000000
 ```bash
 python main.py --mode eval --alphas 0.25 --episodes 100
 ```
+
 ### **🔧 Arguments Reference**
 | Argument | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -146,13 +136,6 @@ python main.py --mode eval --alphas 0.25 --episodes 100
 
 ## 👥 Authors
 
-* 
-**Omer Toledano** - [omertole@post.bgu.ac.il](mailto:omertole@post.bgu.ac.il) 
+* **Omer Toledano** - [omertole@post.bgu.ac.il](mailto:omertole@post.bgu.ac.il) 
 
-
-* 
-**Eliya Naomi Aharon** - [eliyaah@post.bgu.ac.il](mailto:eliyaah@post.bgu.ac.il) 
-
----
-
-*Submitted: February 5, 2026*
+* **Eliya Naomi Aharon** - [eliyaah@post.bgu.ac.il](mailto:eliyaah@post.bgu.ac.il) 
