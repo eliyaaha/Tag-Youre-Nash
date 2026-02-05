@@ -18,3 +18,4 @@ env/
 # Results and generated logs
 results/
 logs/
+models/
