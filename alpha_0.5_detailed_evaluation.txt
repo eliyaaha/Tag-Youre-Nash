@@ -1,0 +1,25 @@
+DETAILED EVALUATION LOG | Alpha: 0.5
+Timestamp: Thu Jan 22 20:39:51 2026
+------------------------------------------------------------
+Episode 01: Total Reward: 700.00 | Captures: 14 | Collisions:  0
+Episode 02: Total Reward: 950.00 | Captures: 16 | Collisions:  0
+Episode 03: Total Reward: 950.00 | Captures: 16 | Collisions:  0
+Episode 04: Total Reward: 750.00 | Captures: 13 | Collisions:  0
+Episode 05: Total Reward: 1049.29 | Captures: 19 | Collisions:  0
+Episode 06: Total Reward: 1050.00 | Captures: 18 | Collisions:  0
+Episode 07: Total Reward: 1049.66 | Captures: 20 | Collisions:  0
+Episode 08: Total Reward: 1050.00 | Captures: 19 | Collisions:  0
+Episode 09: Total Reward: 850.00 | Captures: 16 | Collisions:  0
+Episode 10: Total Reward: 1200.00 | Captures: 20 | Collisions:  0
+Episode 11: Total Reward: 1000.00 | Captures: 18 | Collisions:  0
+Episode 12: Total Reward: 750.00 | Captures: 14 | Collisions:  0
+Episode 13: Total Reward: 1250.00 | Captures: 19 | Collisions:  0
+Episode 14: Total Reward: 1000.00 | Captures: 18 | Collisions:  0
+Episode 15: Total Reward: 1043.71 | Captures: 18 | Collisions:  0
+Episode 16: Total Reward: 950.00 | Captures: 18 | Collisions:  0
+Episode 17: Total Reward: 697.60 | Captures: 12 | Collisions:  0
+Episode 18: Total Reward: 1000.00 | Captures: 15 | Collisions:  0
+Episode 19: Total Reward: 848.63 | Captures: 16 | Collisions:  0
+Episode 20: Total Reward: 399.79 | Captures:  8 | Collisions:  0
+------------------------------------------------------------
+SUMMARY: Avg Reward: 926.93 | Avg Captures: 16.35
