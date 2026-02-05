@@ -14,8 +14,8 @@ def run_experiment(alpha, total_timesteps=100000, rounds=10):
     print(f"{'='*60}")
     
     # 1. Create separate environments for Predator and Prey models
-    env_pred, _ = create_env(alpha=alpha)
-    env_prey, _ = create_env(alpha=alpha)
+    env_pred, _, _ = create_env(alpha=alpha)
+    env_prey, _, _ = create_env(alpha=alpha)
     
     # 2. Initialize PPO Models
     print(f"Create PPO models on device: {DEVICE}")

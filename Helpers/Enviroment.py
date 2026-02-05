@@ -33,7 +33,6 @@ def set_seed(seed: int = 42):
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 NUM_CORES = max(1, multiprocessing.cpu_count() - 2)
 os.environ["SDL_VIDEODRIVER"] = "dummy"  # For headless server execution
-set_seed(42)
 
 def create_env(alpha=1.0, num_cores = -1, max_cycles = 50):
     """
@@ -50,6 +49,7 @@ def create_env(alpha=1.0, num_cores = -1, max_cycles = 50):
     )
     
     possible_agents = env.possible_agents
+    world_obj = env.unwrapped.world
 
     # 2. Apply the Reward Sharing Wrapper
     env = RewardSharingWrapper(env, alpha=alpha)
@@ -68,4 +68,4 @@ def create_env(alpha=1.0, num_cores = -1, max_cycles = 50):
         num_cpus=num_cores,      
         base_class="stable_baselines3"
     )
-    return env, possible_agents
+    return env, possible_agents, world_obj
