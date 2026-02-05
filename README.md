@@ -2,11 +2,8 @@
 
 **Analyzing the Impact of Reward Structures on Strategic Stability and Nash Convergence in MARL**
 
-Final Project | Multi-Agent Systems Course 
+> This repository contains the final project developed for the **Multi-Agent Systems (MAS)** course at **Ben-Gurion University of the Negev**, Faculty of Computer and Information Science, Department of Software and Information Systems Engineering.
 
-> Department of Software and Information Systems Engineering
-> Faculty of Computer and Information Science
-> Ben-Gurion University of the Negev
 
 ## 📌 Overview
 
