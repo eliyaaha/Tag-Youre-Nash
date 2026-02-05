@@ -1,0 +1,20 @@
+# Python stuff
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual Environment (חשוב מאוד!)
+my_env/
+venv/
+env/
+.env
+
+# VS Code settings
+.vscode/
+
+# Mac OS junk (אם את או מישהו בצוות עם מק)
+.DS_Store
+
+# Results and generated logs
+results/
+logs/
