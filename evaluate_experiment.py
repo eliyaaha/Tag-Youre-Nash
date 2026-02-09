@@ -129,7 +129,7 @@ def evaluate_model(alpha, episodes=50, max_cycles=50):
     
     # 2. Save Episode Summaries (One row per episode)
     summary_df = pd.DataFrame(episode_summary_data)
-    summary_csv = os.path.join(alpha_results_dir, "summary.csv") # Simplified name inside the folder
+    summary_csv = os.path.join(alpha_results_dir, "summary.csv") 
     summary_df.to_csv(summary_csv, index=False)
     
     # 3. Save Trajectories (One row per agent per step)
@@ -137,7 +137,7 @@ def evaluate_model(alpha, episodes=50, max_cycles=50):
     column_order = ["agent name", "episode id", "cycle id", "x coordinate", "y coordinate"]
     trajectory_df = trajectory_df[column_order]
     
-    trajectory_csv = os.path.join(alpha_results_dir, "trajectories.csv") # Simplified name inside the folder
+    trajectory_csv = os.path.join(alpha_results_dir, "trajectories.csv")
     trajectory_df.to_csv(trajectory_csv, index=False)
     
     logger.info(f"Evaluation finished for Alpha {alpha}")
