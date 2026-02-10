@@ -9,12 +9,12 @@ from Helpers.RewardSharing import *
 from Helpers.Enviroment import create_env, DEVICE
 from Helpers.Logger import ExperimentLogger
 
-def process_step_metrics(world, rewards, agent_names, info):
+def process_step_metrics(env, rewards, agent_names, info):
     """
     Extracts high-level metrics and agent trajectories from a single environment step.
     
     Args:
-        world: The underlying PettingZoo world object (for XY coordinates).
+        env: The vectorized environment (to access live world state).
         rewards: Numpy array of rewards from the vectorized environment.
         agent_names: List of agent names in the environment.
         info: Info dictionary from the environment step.
@@ -30,7 +30,7 @@ def process_step_metrics(world, rewards, agent_names, info):
     # 2. Identify if a capture occurred (based on reward threshold)
     is_capture = step_reward > 8
     
-    # 3. Extract collision counts from the info dict
+    # 3. Extract collision counts and coordinates from the live environment
     collisions = 0
     current_info = info[0] if isinstance(info, list) else info
     if isinstance(current_info, dict):
@@ -38,14 +38,66 @@ def process_step_metrics(world, rewards, agent_names, info):
             if isinstance(agent_data, dict) and agent_data.get("collision", False):
                 collisions += 1
 
-    # 4. Extract XY Coordinates for all agents directly from the world state
+    # 4. Extract XY Coordinates by unwrapping the vectorized environment
     step_coords = []
-    for agent in world.agents:
-        step_coords.append({
-            "agent name": agent.name,
-            "x coordinate": agent.state.p_pos[0],
-            "y coordinate": agent.state.p_pos[1]
-        })
+    
+    try:
+        # Unwrap through the SuperSuit/VectorEnv wrapper stack to reach the underlying world
+        # Path: SB3VecEnvWrapper -> venv (ConcatVecEnv) -> vec_envs[0] (MarkovVectorEnv)
+        #       -> par_env (aec_to_parallel_wrapper) -> aec_env (OrderEnforcingWrapper) -> world
+        
+        markov_env = env.venv.vec_envs[0]
+        par_env = markov_env.par_env
+        aec_to_par = par_env.aec_env  # This is actually the aec wrapper
+        
+        # Go back through aec_to_parallel_wrapper to get aec_env with world
+        aec_env = aec_to_par
+        while hasattr(aec_env, 'env') and not hasattr(aec_env, 'world'):
+            aec_env = aec_env.env
+        
+        # Try to get world from aec_to_parallel_wrapper
+        base_par_env = aec_to_par
+        while hasattr(base_par_env, 'env'):
+            base_par_env = base_par_env.env
+        
+        if hasattr(base_par_env, 'aec_env'):
+            actual_aec = base_par_env.aec_env
+            if hasattr(actual_aec, 'world'):
+                world = actual_aec.world
+                
+                # Extract positions from all agents
+                for agent in world.agents:
+                    step_coords.append({
+                        "agent name": agent.name,
+                        "x coordinate": float(agent.state.p_pos[0]),
+                        "y coordinate": float(agent.state.p_pos[1])
+                    })
+                
+                # Infer collisions from live positions as fallback
+                if collisions == 0:
+                    predator_agents_objs = [a for a in world.agents if "adversary" in a.name]
+                    for i in range(len(predator_agents_objs)):
+                        for j in range(i + 1, len(predator_agents_objs)):
+                            p1 = np.array(predator_agents_objs[i].state.p_pos)
+                            p2 = np.array(predator_agents_objs[j].state.p_pos)
+                            r1 = predator_agents_objs[i].size
+                            r2 = predator_agents_objs[j].size
+                            dist = np.linalg.norm(p1 - p2)
+                            if dist <= r1 + r2:
+                                collisions += 1
+            else:
+                # Fallback: return NaN if world not found
+                step_coords = [{"agent name": name, "x coordinate": np.nan, "y coordinate": np.nan} 
+                              for name in agent_names]
+        else:
+            # Fallback: return NaN if aec_env not found
+            step_coords = [{"agent name": name, "x coordinate": np.nan, "y coordinate": np.nan} 
+                          for name in agent_names]
+    except Exception as e:
+        # Fallback: return NaN on any unwrapping error
+        print(f"Warning: Could not extract positions during step: {e}")
+        step_coords = [{"agent name": name, "x coordinate": np.nan, "y coordinate": np.nan} 
+                      for name in agent_names]
                 
     return step_reward, is_capture, collisions, step_coords
 
@@ -57,7 +109,7 @@ def evaluate_model(alpha, episodes=50, max_cycles=50):
     logger = ExperimentLogger(experiment_name="Evaluation", alpha=alpha)
     
     # Setup paths
-    model_path = f"models/predator_alpha_{alpha}"
+    model_path = f"./models/predator_alpha_{alpha}"
     results_dir ="results"
     os.makedirs(results_dir, exist_ok=True)
     
@@ -66,9 +118,8 @@ def evaluate_model(alpha, episodes=50, max_cycles=50):
         logger.error(f"Model file not found: {model_path}")
         return
 
-    # Create environment and retrieve the unwrapped world object for tracking
-    # Note: create_env must return (env, possible_agents, world_obj)
-    env, possible_agents, world_obj = create_env(alpha=alpha, max_cycles=max_cycles, num_cores=-1)
+    # Create environment
+    env, possible_agents, _ = create_env(alpha=alpha, max_cycles=max_cycles, eval=True)
     
     logger.info(f"Loading PPO model from {model_path}")
     model = PPO.load(model_path, device=DEVICE)
@@ -91,7 +142,7 @@ def evaluate_model(alpha, episodes=50, max_cycles=50):
             
             # Extract metrics using the modular processor
             step_reward, is_capture, collisions, step_coords = process_step_metrics(
-                world_obj, rewards, possible_agents, infos
+                env, rewards, possible_agents, infos
             )
             
             # Update episode accumulation
@@ -117,7 +168,6 @@ def evaluate_model(alpha, episodes=50, max_cycles=50):
         episode_summary_data.append({
             "episode": ep,
             "cumulative_reward": ep_reward,
-            "first_capture_step": first_capture_step,
             "total_captures": ep_captures,
             "total_collisions": ep_collisions
         })

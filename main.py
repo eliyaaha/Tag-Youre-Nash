@@ -4,14 +4,17 @@ from Helpers.Enviroment import set_seed
 from evaluate_experiment import evaluate_model
 from train_experiment import run_experiment as train_model
 
+# Import the best response logic (Ensure the filename matches check_best_response.py)
+from check_best_response import run as run_best_response_check
+
 def main():
     parser = argparse.ArgumentParser(description="MARL Experiment Runner: Batch Processing Alpha Values")
     
     # Core Experiment Arguments
-    parser.add_argument("--mode", type=str, choices=["train", "eval", "both"], required=True,
-                        help="Execution mode: train, eval, or both.")
+    # Added "br" for best response and "all" for the full pipeline
+    parser.add_argument("--mode", type=str, choices=["train", "eval", "br", "both", "all"], required=True,
+                        help="Execution mode: train, eval, br (Best Response), both (train+eval), or all.")
     
-    # Changed to accept a list of floats
     parser.add_argument("--alphas", type=float, nargs='+', default=[0.0, 0.25, 0.5, 0.75, 1.0], 
                         help="List of alpha values to process (e.g., --alphas 0.0 0.5 1.0)")
     
@@ -22,12 +25,18 @@ def main():
     parser.add_argument("--timesteps", type=int, default=100000, 
                         help="Total timesteps to train each model")
     
-    # Evaluation Arguments
+    parser.add_argument("--rounds", type=int, default=10, 
+                        help="Total rounds to train each model")
+    
+    # Evaluation & Best Response Arguments
     parser.add_argument("--episodes", type=int, default=100, 
                         help="Number of episodes for evaluation")
     
     parser.add_argument("--max_cycles", type=int, default=25, 
                         help="Maximum steps per episode")
+    
+    parser.add_argument("--sample", type=int, default=50,
+                        help="Number of states to sample for Best Response check")
 
     args = parser.parse_args()
 
@@ -36,27 +45,27 @@ def main():
     
     # Initialize a master logger for the entire batch run
     master_logger = ExperimentLogger(experiment_name=f"Batch_{args.mode}", alpha="ALL")
-    master_logger.info(f"🚀 Starting Batch Run | Alphas to process: {args.alphas}")
+    master_logger.info(f"🚀 Starting Batch Run | Mode: {args.mode} | Alphas: {args.alphas}")
 
     # 2. Iterate through each alpha value
     for alpha in args.alphas:
         master_logger.info(f"\n{'='*40}\nProcessing ALPHA: {alpha}\n{'='*40}")
 
         # --- Phase 1: Training ---
-        if args.mode in ["train", "both"]:
+        if args.mode in ["train", "both", "all"]:
             master_logger.info(f"Starting training for alpha {alpha}...")
             try:
-                train_model(alpha=alpha, timesteps=args.timesteps, seed=args.seed)
+                train_model(alpha=alpha, total_timesteps=args.timesteps, rounds=args.rounds)
                 master_logger.info(f"Training completed for alpha {alpha}")
             except Exception as e:
                 master_logger.error(f"Training FAILED for alpha {alpha}: {str(e)}")
                 continue # Skip to next alpha if training fails
 
         # --- Phase 2: Evaluation ---
-        if args.mode in ["eval", "both"]:
+        # Note: Best Response needs the trajectories.csv generated here
+        if args.mode in ["eval", "both", "all"]:
             master_logger.info(f"Starting evaluation for alpha {alpha}...")
             try:
-                # Call our evaluation function
                 evaluate_model(
                     alpha=alpha, 
                     episodes=args.episodes, 
@@ -66,7 +75,21 @@ def main():
             except Exception as e:
                 master_logger.error(f"Evaluation FAILED for alpha {alpha}: {str(e)}")
 
-    master_logger.info(f"\n✨ ALL ALPHAS PROCESSED: {args.alphas}")
+        # --- Phase 3: Best Response Check ---
+        if args.mode in ["br", "all"]:
+            master_logger.info(f"Starting Best-Response check for alpha {alpha}...")
+            try:
+                # Call the run function from your new script
+                run_best_response_check(
+                    alpha=alpha, 
+                    max_cycles=args.max_cycles, 
+                    sample=args.sample
+                )
+                master_logger.info(f"Best-Response check completed for alpha {alpha}")
+            except Exception as e:
+                master_logger.error(f"Best-Response check FAILED for alpha {alpha}: {str(e)}")
+
+    master_logger.info(f"\n✨ ALL PROCESSES COMPLETED FOR ALPHAS: {args.alphas}")
 
 if __name__ == "__main__":
     main()

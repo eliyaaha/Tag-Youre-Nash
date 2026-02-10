@@ -34,7 +34,7 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 NUM_CORES = max(1, multiprocessing.cpu_count() - 2)
 os.environ["SDL_VIDEODRIVER"] = "dummy"  # For headless server execution
 
-def create_env(alpha=1.0, num_cores = -1, max_cycles = 50):
+def create_env(alpha=1.0, eval=False, max_cycles = 50):
     """
     Creates a vectorized environment for faster training.
     """
@@ -51,6 +51,11 @@ def create_env(alpha=1.0, num_cores = -1, max_cycles = 50):
     possible_agents = env.possible_agents
     world_obj = env.unwrapped.world
 
+    # Respect the passed `alpha` during evaluation as well.
+    # Previously this forced alpha=1.0 when eval=True which made
+    # evaluation always use individual rewards regardless of training.
+    # Keep the passed alpha unchanged.
+    
     # 2. Apply the Reward Sharing Wrapper
     env = RewardSharingWrapper(env, alpha=alpha)
     
@@ -59,8 +64,7 @@ def create_env(alpha=1.0, num_cores = -1, max_cycles = 50):
     env = ss.pad_action_space_v0(env) # Ensure equal action size
     env = ss.pettingzoo_env_to_vec_env_v1(env) # Convert to Vector Env
 
-    if num_cores == -1:
-        num_cores = NUM_CORES
+    num_cores = 0 if eval else NUM_CORES
 
     env = ss.concat_vec_envs_v1(
         env, 
