@@ -69,29 +69,56 @@ pip install -r requirements.txt
 
 ## 💻 Usage
 
-The `main.py` script supports **batch processing**, allowing you to run training and evaluation for multiple $\alpha$ values in a single execution.
+The `main.py` script supports **batch processing** and **different execution modes (train, eval, br, or all)** to manage the experiment pipeline, allowing you to run training and evaluation for multiple $\alpha$ values in a single execution.
 
-### Common Commands
+### Note on Dependencies: 
+The pipeline is sequential. 
+- **Eval** requires trained models.
+- **Best Response (br)** requires trajectory files generated during evaluation.
+- **Recommendation:** Use --mode all to ensure all dependencies are met.
 
-**1. Run the Full Experiment (Train & Eval for all alphas):**
-This will reproduce the project's results by iterating through $\alpha \in \{0.0, 0.25, 0.5, 0.75, 1.0\}$.
+## Common Commands:
+1. **Run the Full Experiment (Default):** 
+
+Run the complete pipeline: Training $\rightarrow$ Evaluation $\rightarrow$ Best Response Analysis.
+This iterates through all default alpha values: $\alpha \in \{0.0, 0.25, 0.5, 0.75, 1.0\}$.
 ```bash
-python main.py --mode both
+python main.py --mode all
 ```
-**2. Train specific alphas: To train only specific configurations (e.g., Pure Competition vs. High Cooperation):**
 
-```bash
+2. **Train Specific Alphas:** 
+
+Useful for comparing specific configurations (e.g., Pure Competition vs. High Cooperation).
+```bash 
 python main.py --mode train --alphas 1.0 0.25 --timesteps 1000000
 ```
-**3. Evaluate existing models:**
-```bash
+
+3. **Evaluate Existing Models:**
+
+Generates trajectory files and performance metrics. Requires previously trained models.
+```bash 
 python main.py --mode eval --alphas 0.25 --episodes 100
 ```
+
+4. **Best Response Analysis:**
+
+Checks for Nash Equilibrium stability using stored trajectories. Requires eval to be run first.
+```bash 
+python main.py --mode br --alphas 0.25 --sample 50
+```
+
+5. **Combined Modes:**
+
+You can chain specific stages. For example, to Train and immediately Evaluate:
+```bash 
+python main.py --mode train eval --alphas 1.0 0.25
+```
+
 
 ### **🔧 Arguments Reference**
 | Argument | Type | Default | Description |
 | --- | --- | --- | --- |
-|`--mode`| `str` | Required | Execution mode: train, eval, or both. |
+|`--mode`| `str` | Required | Execution mode: train, eval, br, or all. |
 |`--alphas`| `list` | [0.0 ... 1.0] | List of alpha values to process (e.g., 0.0 0.5 1.0). |
 | `--timesteps` | `int` | `100,000` | Total training timesteps per model. |
 | `--episodes` | `int` | `100` | Number of episodes for evaluation metrics. |
