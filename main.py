@@ -1,11 +1,13 @@
 import argparse
 from Helpers.Logger import ExperimentLogger
 from Helpers.Enviroment import set_seed 
-from evaluate_experiment import evaluate_model
+from Evaluation.evaluate_experiment import evaluate_model
 from train_experiment import run_experiment as train_model
+import os
+from Evaluation.create_ne_table import generate_ne_table
 
 # Import the best response logic (Ensure the filename matches check_best_response.py)
-from check_best_response import run as run_best_response_check
+from Evaluation.check_best_response import run as run_best_response_check
 
 def main():
     parser = argparse.ArgumentParser(description="MARL Experiment Runner: Batch Processing Alpha Values")
@@ -35,7 +37,7 @@ def main():
     parser.add_argument("--max_cycles", type=int, default=50, 
                         help="Maximum steps per episode")
     
-    parser.add_argument("--sample", type=int, default=50,
+    parser.add_argument("--sample", type=int, default=100,
                         help="Number of states to sample for Best Response check")
 
     args = parser.parse_args()
@@ -57,7 +59,7 @@ def main():
         master_logger.info(f"\n{'='*40}\nProcessing ALPHA: {alpha}\n{'='*40}")
 
         # --- Phase 1: Training ---
-        if args.mode in active_modes:
+        if 'train' in active_modes:
             master_logger.info(f"Starting training for alpha {alpha}...")
             try:
                 train_model(alpha=alpha, total_timesteps=args.timesteps, rounds=args.rounds)
@@ -67,7 +69,7 @@ def main():
                 continue # Skip to next alpha if training fails
 
         # --- Phase 2: Evaluation ---
-        if args.mode in active_modes:
+        if 'eval' in active_modes:
             master_logger.info(f"Starting evaluation for alpha {alpha}...")
             try:
                 evaluate_model(
@@ -80,7 +82,7 @@ def main():
                 master_logger.error(f"Evaluation FAILED for alpha {alpha}: {str(e)}")
 
         # --- Phase 3: Best Response Check ---
-        if args.mode in active_modes:
+        if 'br' in active_modes:
             master_logger.info(f"Starting Best-Response check for alpha {alpha}...")
             try:
                 # Call the run function from your new script
@@ -92,8 +94,19 @@ def main():
                 master_logger.info(f"Best-Response check completed for alpha {alpha}")
             except Exception as e:
                 master_logger.error(f"Best-Response check FAILED for alpha {alpha}: {str(e)}")
-
+        
     master_logger.info(f"\n✨ ALL PROCESSES COMPLETED FOR ALPHAS: {args.alphas}")
+
+    # --- Phase 4: Generate Summary Table (The Grand Finale) ---
+    # We run this only if 'br' was part of the process (or if we just want to summarize existing results)
+    if 'br' in active_modes or os.path.exists("results"):
+        master_logger.info("\n📊 Generating Final Nash Equilibrium Table...")
+        try:
+            # We pass the alphas from the arguments to ensure the table covers what we just ran
+            generate_ne_table(args.alphas)
+            master_logger.info("✅ Final Table Generated Successfully.")
+        except Exception as e:
+            master_logger.error(f"Failed to generate final table: {str(e)}")
 
 if __name__ == "__main__":
     main()

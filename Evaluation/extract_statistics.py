@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 import os
 import glob
-import numpy as np
 
 def get_all_summary_data(results_path):
     """Loads all summary.csv files from alpha directories."""

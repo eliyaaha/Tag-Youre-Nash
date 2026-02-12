@@ -28,9 +28,9 @@ This project explores the line between coordination and strategic paralysis. We 
 
 We utilize the **Multi-Agent Particle Environment (MPE)**, specifically the `simple_tag_v3` scenario via the **PettingZoo** library.
 
-* **Predators (3):** Slower agents aiming to capture the prey ( reward).
+* **Predators (3):** Slower agents aiming to capture the prey (reward).
 
-* **Prey (1):** Faster agent aiming to evade capture ( penalty).
+* **Prey (1):** Faster agent aiming to evade capture (penalty).
 
 * **Action Space:** Discrete (Up, Down, Left, Right, Stationary).
 

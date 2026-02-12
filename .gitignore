@@ -1,5 +1,7 @@
 # Python stuff
 __pycache__/
+Helpers/__pycache__/
+
 *.py[cod]
 *.so
 
