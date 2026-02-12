@@ -1,6 +1,5 @@
 import numpy as np
-from Helpers.Enviroment import create_env, set_seed
-
+from Helpers.Enviroment import create_env
 
 def _unwrap_to_world(vec_env):
     try:
@@ -61,7 +60,6 @@ def simulate_deviation(alpha, seed_snapshot, deviator_name, candidate_action, pr
     Returns cumulative reward for the deviator from this step onward.
     """
     env_clone, agents_clone, _ = create_env(alpha=alpha, max_cycles=max_cycles, eval=False)
-    set_seed(0)
     obs = env_clone.reset()
 
     restore_world_state_to_env(env_clone, seed_snapshot)
