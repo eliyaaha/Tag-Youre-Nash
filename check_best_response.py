@@ -4,12 +4,16 @@ import pandas as pd
 import numpy as np
 from stable_baselines3 import PPO
 
-from Helpers.Enviroment import create_env, set_seed
+from Helpers.Enviroment import create_env
 from Helpers.ne_utils import snapshot_world_state, simulate_deviation
+from Helpers.Logger import ExperimentLogger  # Import the logger
 import check_ne
 
 
 def infer_n_actions(env):
+    """
+    Helper to infer the number of actions from the environment's action space.
+    """
     try:
         a_space = env.action_space
         import gym
@@ -23,73 +27,92 @@ def infer_n_actions(env):
 
 
 def run(alpha, max_cycles=50, sample=100):
+    # Initialize the logger
+    logger = ExperimentLogger(experiment_name="BestResponseCheck", alpha=alpha)
+    
     results_dir = os.path.join("results", f"alpha_{alpha}")
     os.makedirs(results_dir, exist_ok=True)
     stall_csv = os.path.join(results_dir, "stalling_candidates.csv")
 
-    # If stalling file not present, compute it
-    if not os.path.exists(stall_csv):
-        print("Stalling candidates not found, computing from trajectories...")
-        traj_csv = os.path.join(results_dir, "trajectories.csv")
-        if not os.path.exists(traj_csv):
-            raise FileNotFoundError(f"Trajectories CSV missing: {traj_csv}")
+    logger.info(f"🚀 Starting Best Response check for Alpha: {alpha}")
+    logger.info("Computing stalling_candidates from trajectories...")
+
+    traj_csv = os.path.join(results_dir, "trajectories.csv")
+    if not os.path.exists(traj_csv):
+        logger.error(f"Trajectories CSV missing: {traj_csv}. Try running evaluation first!")
+        raise FileNotFoundError(f"Trajectories CSV missing: {traj_csv}")
+    
+    try:
+        # Find stalling candidates
         df_stall = check_ne.find_stalling(traj_csv, threshold=1e-1, max_per_episode=1)
         df_stall.to_csv(stall_csv, index=False)
-    else:
-        df_stall = pd.read_csv(stall_csv)
+        logger.info(f"Found {len(df_stall)} stalling candidates.")
+    except Exception as e:
+        logger.error(f"Failed to find stalling candidates: {str(e)}")
+        return
 
-    # Load predator model
+    # Load the predator model
     model_path = f"./models/predator_alpha_{alpha}"
     if not os.path.exists(model_path):
+        logger.error(f"Predator model not found: {model_path}. Try training a model first!")
         raise FileNotFoundError(f"Predator model not found: {model_path}")
+    
     pred_model = PPO.load(model_path)
+    logger.info(f"Model loaded from {model_path}")
 
-    # create env to roll episodes to the target step to obtain snapshot
+    # Create environment to roll episodes to the target step
     env, possible_agents, _ = create_env(alpha=alpha, max_cycles=max_cycles, eval=False)
 
     n_samples = min(len(df_stall), sample)
     df_sample = df_stall.sample(n_samples, random_state=0).reset_index(drop=True)
+    logger.info(f"Sampling {n_samples} states for evaluation.")
 
     br_results = []
+    ne_count = 0
+
     for idx, row in df_sample.iterrows():
         agent = row['agent name']
         ep = int(row['episode id'])
         cycle = int(row['cycle id'])
 
-        # roll the env to that episode/cycle
-        set_seed(0)
+        # Reset and rollout the environment to the target episode/cycle
         obs = env.reset()
-        # step until desired cycle
         for t in range(1, cycle + 1):
             action, _ = pred_model.predict(obs, deterministic=True)
             obs, rewards, dones, infos = env.step(action)
 
-        # snapshot world at this point
+        # Snapshot the world state at this point
         seed_snapshot = snapshot_world_state(env)
-
-        # infer action space size
         n_actions = infer_n_actions(env)
 
-        # baseline action and reward
+        # Calculate Baseline action and reward
         baseline_action_arr, _ = pred_model.predict(obs, deterministic=True)
         baseline_a = int(baseline_action_arr[possible_agents.index(agent)])
         baseline_reward = simulate_deviation(alpha, seed_snapshot, agent, baseline_a, pred_model, possible_agents, max_cycles, None)
 
+        # Check for deviations (Best Response calculation)
         best_reward = baseline_reward
         best_action = baseline_a
+        
         for a in range(n_actions):
-            if a == baseline_a:
+            if a == baseline_a: 
                 continue
             try:
                 r = simulate_deviation(alpha, seed_snapshot, agent, a, pred_model, possible_agents, max_cycles, None)
             except Exception:
                 r = -np.inf
+            
             if r > best_reward:
                 best_reward = r
                 best_action = a
 
         delta = best_reward - baseline_reward
         is_ne = delta <= 1e-8
+        if is_ne: 
+            ne_count += 1
+
+        # Log progress for specific sample
+        logger.info(f"[{idx+1}/{n_samples}] Ep {ep} Cycle {cycle} | Agent: {agent} | Delta: {delta:.4f} | Is NE: {is_ne}")
 
         br_results.append({
             'agent name': agent,
@@ -103,10 +126,13 @@ def run(alpha, max_cycles=50, sample=100):
             'is_ne': bool(is_ne)
         })
 
-        # optional: save progressively
+        # Save results incrementally
         pd.DataFrame(br_results).to_csv(os.path.join(results_dir, 'best_response_checks.csv'), index=False)
 
-    print(f"Finished best-response checks. Results saved to {os.path.join(results_dir, 'best_response_checks.csv')}")
+    # Log summary statistics
+    ne_percentage = (ne_count / n_samples) * 100 if n_samples > 0 else 0
+    logger.info(f"✅ Finished BR checks. NE Stability: {ne_percentage:.2f}% ({ne_count}/{n_samples})")
+    logger.info(f"Results saved to {os.path.join(results_dir, 'best_response_checks.csv')}")
 
 
 def main():
@@ -115,6 +141,7 @@ def main():
     parser.add_argument('--max_cycles', type=int, default=50)
     parser.add_argument('--sample', type=int, default=50)
     args = parser.parse_args()
+    
     run(alpha=args.alpha, max_cycles=args.max_cycles, sample=args.sample)
 
 

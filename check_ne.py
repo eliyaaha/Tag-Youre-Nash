@@ -23,7 +23,7 @@ def find_stalling(trajectory_csv, threshold=1e-1, max_per_episode=None):
         diffs = coords[1:] - coords[:-1]
         norms = np.linalg.norm(diffs, axis=1)
         for i, norm in enumerate(norms, start=1):
-            if norm <= threshold:
+            if cycles[i] >= 5 and norm <= threshold:
                 row = {
                     "agent name": agent,
                     "episode id": int(ep),
