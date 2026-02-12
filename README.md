@@ -75,7 +75,7 @@ The `main.py` script supports **batch processing** and **different execution mod
 The pipeline is sequential. 
 - **Eval** requires trained models.
 - **Best Response (br)** requires trajectory files generated during evaluation.
-- **Recommendation:** Use --mode all to ensure all dependencies are met.
+- **Recommendation:** Use `--mode all` to ensure all dependencies are met.
 
 ## Common Commands:
 1. **Run the Full Experiment (Default):** 
