@@ -19,7 +19,7 @@ This project explores the line between coordination and strategic paralysis. We 
 
 1. **RQ1:** How does shifting the reward mechanism influence cooperation in a competitive environment? 
 
-2. **RQ2:** How do empirical MARL strategies align with theoretical Nash Equilibria? 
+2. **RQ2:** To what extent does the observed ’stalling’ behavior constitute a true game-theoretic equilibrium?
 
 
 ## 🛠️ Environment & Methodology
